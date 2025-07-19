@@ -25,7 +25,7 @@ router.get('/', async (req, res) => {
 // Seller or Admin: add banner request
 router.post('/', firebaseAuth, roleCheck('seller', 'admin'), async (req, res) => {
   try {
-    const { title, image, description, seller } = req.body;
+    const { title, image, description } = req.body;
     if (!title || !image || !description) {
       return res.status(400).json({ message: 'Title, image, and description are required.' });
     }
@@ -36,7 +36,8 @@ router.post('/', firebaseAuth, roleCheck('seller', 'admin'), async (req, res) =>
       slide = true;
       status = 'live';
     }
-    const banner = await Banner.create({ title, image, description, seller, slide, status });
+    const sellerId = req.user._id; // always use the current user's ID
+    const banner = await Banner.create({ title, image, description, seller: sellerId, slide, status });
     res.json(banner);
   } catch (err) {
     // Error creating banner
@@ -77,10 +78,7 @@ router.put('/:id', firebaseAuth, roleCheck('admin'), async (req, res) => {
   try {
     const banner = await Banner.findById(req.params.id);
     if (!banner) return res.status(404).json({ message: 'Banner not found' });
-    // Only allow edit if the banner's seller is the current admin
-    if (!banner.seller || banner.seller.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: 'You can only edit banners you created.' });
-    }
+    // Admin can edit any banner
     const { title, image, description } = req.body;
     if (title) banner.title = title;
     if (image) banner.image = image;
