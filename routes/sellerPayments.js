@@ -45,15 +45,20 @@ router.get('/', firebaseAuth, async (req, res) => {
         ]
       });
 
-    // Manually populate product name and price for each item in invoice.items
+    // Manually populate product name, price, and seller for each item in invoice.items
     const Product = (await import('../models/Product.js')).default;
     for (const sp of payments) {
       if (sp.invoice && Array.isArray(sp.invoice.items)) {
         for (const item of sp.invoice.items) {
           if (item.product) {
-            const prod = await Product.findById(item.product).select('name price');
+            const prod = await Product.findById(item.product).select('name price seller');
             if (prod) {
-              item.product = { _id: prod._id, name: prod.name, price: prod.price };
+              item.product = {
+                _id: prod._id,
+                name: prod.name,
+                price: prod.price,
+                seller: prod.seller
+              };
             }
           }
         }
