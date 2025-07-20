@@ -23,6 +23,19 @@ router.post('/', firebaseAuth, roleCheck('admin'), async (req, res) => {
   res.json(cat);
 });
 
+
+// Update category (admin)
+router.put('/:id', firebaseAuth, roleCheck('admin'), async (req, res) => {
+  const { name, image } = req.body;
+  const updated = await Category.findByIdAndUpdate(
+    req.params.id,
+    { name, image },
+    { new: true, runValidators: true }
+  );
+  if (!updated) return res.status(404).json({ message: 'Category not found' });
+  res.json(updated);
+});
+
 // Delete category (admin)
 router.delete('/:id', firebaseAuth, roleCheck('admin'), async (req, res) => {
   await Category.findByIdAndDelete(req.params.id);
