@@ -1,4 +1,3 @@
-// routes/banner.js
 import express from 'express';
 import Banner from '../models/Banner.js';
 import Product from '../models/Product.js';
