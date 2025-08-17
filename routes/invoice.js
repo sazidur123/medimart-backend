@@ -2,22 +2,23 @@
 import express from 'express';
 import Invoice from '../models/Invoice.js';
 import Payment from '../models/Payment.js';
+import User from '../models/User.js';
 import firebaseAuth from '../middleware/firebaseAuth.js';
-import mongoose from 'mongoose';
 
 const router = express.Router();
 
-// Fetch all invoices for a user
+// Fetch all invoices for a user (by Firebase UID)
 router.get('/', firebaseAuth, async (req, res) => {
   const { userId } = req.query;
   if (!userId) return res.status(400).json({ message: "userId is required" });
 
   try {
-    // If userId is an ObjectId string, convert it
-    const userObjectId = mongoose.Types.ObjectId.isValid(userId)
-      ? new mongoose.Types.ObjectId(userId)
-      : userId;
-    const invoices = await Invoice.find({ user: userObjectId }).sort({ date: -1 });
+    // Find the user by firebaseUid (not _id)
+    const user = await User.findOne({ firebaseUid: userId });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Now find invoices by user ObjectId
+    const invoices = await Invoice.find({ user: user._id }).sort({ date: -1 });
     res.json({ invoices });
   } catch (err) {
     res.status(500).json({ message: "Failed to fetch invoices" });
