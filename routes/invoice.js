@@ -56,4 +56,3 @@ router.post('/', firebaseAuth, async (req, res) => {
 });
 
 export default router;
-
